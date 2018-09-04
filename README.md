@@ -25,29 +25,35 @@ Usage
 -----
 You can use this in your terraform template with the following steps.
 
-```
-module "classic-load-balance" {
-    source = "terraform-alicloud-classic-load-balance"
+1. Adding a module resource to your template, e.g. main.tf
 
-    alicloud_access_key = "Abc123"
-    alicloud_secret_key = "Abc1234"
-    region = "cn-beijing"
 
-    vpc_name = "my-new-vpc"
-    vswitch_cidrs = ["10.1.2.0/24", "10.1.3.0/24"]
+    ```
+    module "classic-load-balance" {
+        source = "aliyun/classic-load-balance/alicloud"
 
-    system_category = "cloud_ssd"
-    system_size = "100"
+        region = "cn-beijing"
 
-    slb_max_bandwidth = "50"
-}
-```
+        vpc_name = "my-new-vpc"
+        vswitch_cidrs = ["10.1.2.0/24", "10.1.3.0/24"]
+
+        system_category = "cloud_ssd"
+        system_size = "100"
+
+        slb_max_bandwidth = "50"
+    }
+    ```
+
+2. Setting `access_key` and `secret_key` values through environment variables:
+
+    - ALICLOUD_ACCESS_KEY
+    - ALICLOUD_SECRET_KEY
 
 Conditional creation
 --------------------
 This example supports using existing VPC and VSwitches to create ECS and RDS instances conditionally.
 
-### Using existing vpc and vswitches for the cluster.
+#### Using existing vpc and vswitches for the cluster.
 
 You can specify the following user-defined arguments:
 
@@ -61,8 +67,6 @@ you must ensure the specified vswitches can creating RDS instance.
 module "classic-load-balance" {
     source = "terraform-alicloud-classic-load-balance"
 
-    alicloud_access_key = "Abc123"
-    alicloud_secret_key = "Abc1234"
     region = "cn-beijing"
 
     vpc_id = "vpc-abc12345"
