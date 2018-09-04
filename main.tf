@@ -1,7 +1,5 @@
 // Provider specific configs
 provider "alicloud" {
-  access_key = "${var.alicloud_access_key}"
-  secret_key = "${var.alicloud_secret_key}"
   region = "${var.region}"
 }
 
@@ -10,7 +8,6 @@ data "alicloud_images" "default" {
   most_recent = true
   owners = "system"
   name_regex = "${var.image_name_regex}"
-  output_file = "image.json"
 }
 
 // Instance_types data source for instance_type
@@ -137,7 +134,7 @@ resource "alicloud_db_instance" "default" {
 resource "alicloud_db_account" "default" {
   count = "${var.number_of_rds_instances}"
   instance_id = "${element(alicloud_db_instance.default.*.id, count.index)}"
-  name = "${var.rds_account_name_prefix}_${count.index}"
+  name = "${var.rds_account_name_prefix}${count.index}"
   password = "${var.rds_account_password}"
 }
 
