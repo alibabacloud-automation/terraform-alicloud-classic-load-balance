@@ -32,8 +32,6 @@ You can use this in your terraform template with the following steps.
     module "classic-load-balance" {
         source = "aliyun/classic-load-balance/alicloud"
 
-        region = "cn-beijing"
-
         vpc_name = "my-new-vpc"
         vswitch_cidrs = ["10.1.2.0/24", "10.1.3.0/24"]
 
@@ -66,8 +64,6 @@ you must ensure the specified vswitches can creating RDS instance.
 ```
 module "classic-load-balance" {
     source = "terraform-alicloud-classic-load-balance"
-
-    region = "cn-beijing"
 
     vpc_id = "vpc-abc12345"
     vswitch_cidrs = ["vsw-abc12345", "vsw-abc54321"]
