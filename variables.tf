@@ -54,13 +54,13 @@ variable "vswitch_name_prefix" {
 
 variable "vswitch_ids" {
   description = "List existing vswitches id used to create ECS and RDS instance."
-  type        = "list"
+  type        = list(string)
   default     = []
 }
 
 variable "vswitch_cidrs" {
   description = "List of cidr blocks used to create several new vswitches when variable `vswitch_ids` is not specified."
-  type        = "list"
+  type        = list(string)
   default     = ["10.1.2.0/24", "10.1.3.0/24"]
 }
 
@@ -133,7 +133,7 @@ variable "period_unit" {
 
 variable "instance_tags" {
   description = "Used to mark specified ecs instance."
-  type        = "map"
+  type        = map(string)
 
   default = {
     created_by   = "Terraform"
@@ -233,3 +233,4 @@ variable "bucket_acl" {
   description = "The OSS bucket ACL."
   default     = "private"
 }
+
