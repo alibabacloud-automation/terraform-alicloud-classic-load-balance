@@ -117,20 +117,20 @@ resource "alicloud_instance" "app" {
 
 // SLB Instance Resource for intranet
 resource "alicloud_slb" "intranet" {
-  internet = false
-  name     = var.slb_intranet_name == "" ? var.resource_group_name : var.slb_intranet_name
+  address_type = "intranet"
+  name         = var.slb_intranet_name == "" ? var.resource_group_name : var.slb_intranet_name
 }
 
 resource "alicloud_slb_attachment" "intranet" {
   load_balancer_id = alicloud_slb.intranet.id
-  instance_ids     = concat(alicloud_instance.web[*].id,alicloud_instance.app[*].id)
+  instance_ids     = concat(alicloud_instance.web[*].id, alicloud_instance.app[*].id)
 }
 
 // SLB Instance Resource for internet
 resource "alicloud_slb" "internet" {
-  internet  = true
-  bandwidth = var.slb_max_bandwidth
-  name      = var.slb_internet_name == "" ? var.resource_group_name : var.slb_internet_name
+  address_type = "internet"
+  bandwidth    = var.slb_max_bandwidth
+  name         = var.slb_internet_name == "" ? var.resource_group_name : var.slb_internet_name
 }
 
 resource "alicloud_slb_attachment" "internet" {
@@ -150,8 +150,8 @@ resource "alicloud_db_instance" "default" {
   engine_version   = var.engine_version
   instance_type    = var.db_instance_type
   instance_storage = var.storage
-  vswitch_id = length(var.vswitch_ids) > 0 ? split(",", join(",", var.vswitch_ids))[count.index % length(split(",", join(",", var.vswitch_ids)))] : length(var.vswitch_cidrs) < 1 ? "" : split(",", join(",", alicloud_vswitch.vswitches.*.id))[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))]
-  security_ips = alicloud_instance.app.*.private_ip
+  vswitch_id       = length(var.vswitch_ids) > 0 ? split(",", join(",", var.vswitch_ids))[count.index % length(split(",", join(",", var.vswitch_ids)))] : length(var.vswitch_cidrs) < 1 ? "" : split(",", join(",", alicloud_vswitch.vswitches.*.id))[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))]
+  security_ips     = alicloud_instance.app.*.private_ip
 }
 
 resource "alicloud_db_account" "default" {
