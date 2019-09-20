@@ -40,6 +40,9 @@ You can use this in your terraform template with the following steps.
 
         slb_max_bandwidth = "50"
     }
+    output "web_url" {
+      value = module.classic-load-balance.web_url
+    }
     ```
 
 2. Setting `access_key` and `secret_key` values through environment variables:
@@ -75,9 +78,16 @@ module "classic-load-balance" {
 }
 ```
 
+Checking
+--------
+
+Open Web browser and input the `web_url`(<public_ip/welcome.html>), you can get the follow result:
+
+![image](https://github.com/aliyun/terraform-alicloud-classic-load-balance/blob/master/welcome.png)
+
 Terraform version
 -----------------
-Terraform version 0.11.0 or newer is required for this module to work.
+Terraform version 0.12.0+ is required for this module to work.
 
 Authors
 -------

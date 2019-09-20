@@ -47,6 +47,18 @@ resource "alicloud_security_group" "default" {
   name   = var.group_name == "" ? var.resource_group_name : var.group_name
 }
 
+// Security Group Rule Resource for Module
+resource "alicloud_security_group_rule" "rules" {
+  type              = "ingress"
+  ip_protocol       = "all"
+  nic_type          = "intranet"
+  policy            = "accept"
+  port_range        = "-1/-1"
+  priority          = 1
+  security_group_id = alicloud_security_group.default.id
+  cidr_ip           = "0.0.0.0/0"
+}
+
 // ECS Instance Resource for Web Tier
 resource "alicloud_instance" "web" {
   count = var.number_of_web_instances
@@ -79,6 +91,7 @@ resource "alicloud_instance" "web" {
 
   period      = var.period
   period_unit = var.period_unit
+  user_data   = file("${path.module}/welcome.sh")
 }
 
 // ECS Instance Resource for app Tier
@@ -132,7 +145,17 @@ resource "alicloud_slb" "internet" {
   bandwidth    = var.slb_max_bandwidth
   name         = var.slb_internet_name == "" ? var.resource_group_name : var.slb_internet_name
 }
-
+resource "alicloud_slb_listener" "http" {
+  load_balancer_id    = alicloud_slb.internet.id
+  backend_port        = 8000
+  frontend_port       = 80
+  protocol            = "http"
+  sticky_session      = "on"
+  sticky_session_type = "insert"
+  cookie_timeout      = 86400
+  health_check        = "off"
+  bandwidth           = 10
+}
 resource "alicloud_slb_attachment" "internet" {
   load_balancer_id = alicloud_slb.internet.id
   instance_ids     = alicloud_instance.web.*.id

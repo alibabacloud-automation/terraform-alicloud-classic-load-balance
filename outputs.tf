@@ -32,9 +32,18 @@ output "slb_intranet_id" {
   value       = alicloud_slb.intranet.id
 }
 
+output "slb_intranet_ip" {
+  description = "The intranet SLB ip address."
+  value       = alicloud_slb.intranet.address
+}
 output "slb_internet_id" {
   description = "The internet SLB instance ID."
   value       = alicloud_slb.internet.id
+}
+
+output "slb_internet_ip" {
+  description = "The internet SLB ip address."
+  value       = alicloud_slb.internet.address
 }
 
 // RDS Resource
@@ -59,3 +68,7 @@ output "oss_bucket" {
   value       = alicloud_oss_bucket.default.id
 }
 
+output "web_url" {
+  description = "Output the welcome access url."
+  value       = join("", [alicloud_slb.internet.address, "/welcome.html"])
+}
