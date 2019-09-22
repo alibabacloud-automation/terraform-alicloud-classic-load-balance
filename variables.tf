@@ -1,4 +1,8 @@
 //# common variables
+variable "region" {
+  description = "The region used to launch this module resources."
+  default     = ""
+}
 variable "availability_zones" {
   description = "The available zone to launch ecs instance and other resources."
   type        = list(string)

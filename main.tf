@@ -1,4 +1,5 @@
 provider "alicloud" {
+  region               = var.region != "" ? var.region : null
   configuration_source = "terraform-alicloud-modules/classic-load-balance"
 }
 // Images data source for image_id
@@ -8,29 +9,25 @@ data "alicloud_images" "default" {
   name_regex  = var.image_name_regex
 }
 
-// Zones data source for availability_zone
-data "alicloud_zones" "default" {
-  available_resource_creation = "Rds"
+// Instance classes data source for rds and availablity zones
+// Because the rds instance class not always has enough stock, this module does not use datasource alicloud_zones directly
+data "alicloud_db_instance_classes" "default" {
+  engine            = "MySQL"
+  engine_version    = "5.6"
+  db_instance_class = var.db_instance_class
 }
 
 // Instance_types data source for instance_type
 data "alicloud_instance_types" "web" {
-  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_zones.default.ids.0
+  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_db_instance_classes.default.instance_classes[0].zone_ids[0]["id"]
   cpu_core_count    = var.web_instance_cpu
   memory_size       = var.web_instance_memory
 }
 
 data "alicloud_instance_types" "app" {
-  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_zones.default.ids.0
+  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_db_instance_classes.default.instance_classes[0].zone_ids[0]["id"]
   cpu_core_count    = var.app_instance_cpu
   memory_size       = var.app_instance_memory
-}
-
-// Instance classes data source for rds
-data "alicloud_db_instance_classes" "default" {
-  engine         = "MySQL"
-  engine_version = "5.6"
-  zone_id        = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_zones.default.ids.0
 }
 
 // If there is not specifying vpc_id, the module will launch a new vpc
@@ -45,7 +42,7 @@ resource "alicloud_vswitch" "vswitches" {
   count             = length(var.vswitch_ids) > 0 ? 0 : length(var.vswitch_cidrs)
   vpc_id            = var.vpc_id == "" ? join("", alicloud_vpc.vpc.*.id) : var.vpc_id
   cidr_block        = var.vswitch_cidrs[count.index]
-  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[count.index] : data.alicloud_zones.default.ids[count.index]
+  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[count.index] : data.alicloud_db_instance_classes.default.instance_classes[0].zone_ids[count.index % length(data.alicloud_db_instance_classes.default.instance_classes[0].zone_ids)]["id"]
   name = var.vswitch_name_prefix == "" ? format(
     "%s-%s",
     var.this_module_name,
