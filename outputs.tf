@@ -46,20 +46,39 @@ output "slb_internet_ip" {
   value       = alicloud_slb.internet.address
 }
 
-// RDS Resource
+// RDS Master Resource
 output "rds_master_id" {
   description = "The RDS master instance ID."
-  value       = join(",", alicloud_db_instance.default.*.id)
+  value       = alicloud_db_instance.default.0.id
 }
 
-output "rds_account_id" {
-  description = "The RDS account ID."
-  value       = join(",", alicloud_db_account.default.*.id)
+output "rds_master_account_id" {
+  description = "The RDS Master account ID."
+  value       = alicloud_db_account.default.0.id
 }
 
-output "rds_database_id" {
-  description = "The RDS database ID."
-  value       = join(",", alicloud_db_database.default.*.id)
+output "rds_master_account_name" {
+  description = "The RDS master account name."
+  value       = alicloud_db_account.default.0.name
+}
+
+output "rds_master_account_password" {
+  description = "The RDS master account name."
+  value       = alicloud_db_account.default.0.password
+}
+output "rds_master_database_id" {
+  description = "The RDS master database id."
+  value       = alicloud_db_database.default.0.id
+}
+
+output "rds_master_database_name" {
+  description = "The RDS master database name."
+  value       = alicloud_db_database.default.0.name
+}
+
+output "rds_master_database_connection" {
+  description = "The RDS master database connection."
+  value       = alicloud_db_instance.default.0.connection_string
 }
 
 // OSS Resource

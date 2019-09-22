@@ -2,7 +2,7 @@
 *.tfvars
 
 # Compiled files
-*.tfstate
+*.tfstate*
 *.tfstate.backup
 
 # Module directory

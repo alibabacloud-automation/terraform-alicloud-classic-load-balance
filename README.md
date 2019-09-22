@@ -80,7 +80,7 @@ module "classic-load-balance" {
 
 Checking
 --------
-
+    
 Open Web browser and input the `web_url`(<public_ip/welcome.html>), you can get the follow result:
 
 ![image](https://github.com/aliyun/terraform-alicloud-classic-load-balance/blob/master/welcome.png)

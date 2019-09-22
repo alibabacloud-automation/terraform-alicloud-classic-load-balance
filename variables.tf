@@ -1,7 +1,8 @@
 //# common variables
-variable "availability_zone" {
+variable "availability_zones" {
   description = "The available zone to launch ecs instance and other resources."
-  default     = ""
+  type        = list(string)
+  default     = []
 }
 
 variable "number_format" {
@@ -9,8 +10,8 @@ variable "number_format" {
   default     = "%02d"
 }
 
-variable "resource_group_name" {
-  default = "tf-module-classic-load-balance"
+variable "this_module_name" {
+  default = "terraform-alicloud-classic-load-balance"
 }
 
 # Image variables
@@ -20,19 +21,29 @@ variable "image_name_regex" {
 }
 
 # Instance typs variables
-variable "cpu_core_count" {
-  description = "CPU core count is used to fetch instance types."
+variable "web_instance_cpu" {
+  description = "CPU core count is used to fetch instance types for launching web instances."
   default     = 1
 }
 
-variable "memory_size" {
-  description = "Memory size used to fetch instance types."
+variable "web_instance_memory" {
+  description = "Memory size used to fetch instance types for launching web instances."
+  default     = 2
+}
+
+variable "app_instance_cpu" {
+  description = "CPU core count is used to fetch instance types for launching app instances."
+  default     = 1
+}
+
+variable "app_instance_memory" {
+  description = "Memory size used to fetch instance types for launching app instances."
   default     = 2
 }
 
 # VPC variables
 variable "vpc_name" {
-  description = "The vpc name used to create a new vpc when 'vpc_id' is not specified. Default to variable `resource_group_name`"
+  description = "The vpc name used to create a new vpc when 'vpc_id' is not specified. Default to variable `this_module_name`"
   default     = ""
 }
 
@@ -48,7 +59,7 @@ variable "vpc_cidr" {
 
 # VSwitch variables
 variable "vswitch_name_prefix" {
-  description = "The vswitch name prefix used to create several new vswitches. Default to variable `resource_group_name`"
+  description = "The vswitch name prefix used to create several new vswitches. Default to variable `this_module_name`"
   default     = ""
 }
 
@@ -66,7 +77,7 @@ variable "vswitch_cidrs" {
 
 # Security Group variables
 variable "group_name" {
-  description = "The security group name. Default to variable `resource_group_name`."
+  description = "The security group name. Default to variable `this_module_name`."
   default     = ""
 }
 
@@ -76,8 +87,13 @@ variable "image_id" {
   default     = ""
 }
 
-variable "instance_type" {
-  description = "The instance type used to launch one or more ecs instances. Default from instance typs datasource."
+variable "web_instance_type" {
+  description = "The instance type used to launch one or more web instances. Default from instance typs datasource."
+  default     = ""
+}
+
+variable "app_instance_type" {
+  description = "The instance type used to launch one or more web instances. Default from instance typs datasource."
   default     = ""
 }
 
@@ -182,14 +198,14 @@ variable "engine_version" {
   default     = "5.6"
 }
 
-variable "db_instance_type" {
-  description = "The rds instance type."
-  default     = "rds.mysql.t1.small"
+variable "db_instance_class" {
+  description = "The rds instance type. If not set, the data source `alicloud_db_instance_classes` will return random class."
+  default     = ""
 }
 
-variable "storage" {
-  description = "The rds instance storage."
-  default     = "10"
+variable "db_instance_storage" {
+  description = "The rds instance storage. If not set, the data source `alicloud_db_instance_classes` will return a min storage."
+  default     = 10
 }
 
 variable "rds_account_name_prefix" {
@@ -209,12 +225,12 @@ variable "rds_database_name_prefix" {
 
 // SLB variables
 variable "slb_intranet_name" {
-  description = "The SLB intranet instance name used to create a new Intraner SLB instance. Default to `resource_group_name`"
+  description = "The SLB intranet instance name used to create a new Intraner SLB instance. Default to `this_module_name`"
   default     = ""
 }
 
 variable "slb_internet_name" {
-  description = "The SLB internet instance name used to create a new Internet SLB instance. Default to `resource_group_name`"
+  description = "The SLB internet instance name used to create a new Internet SLB instance. Default to `this_module_name`"
   default     = ""
 }
 
@@ -222,10 +238,18 @@ variable "slb_max_bandwidth" {
   description = "The maximum internet out bandwidth of slb instance."
   default     = 10
 }
+variable "slb_intranet_spec" {
+  description = "The SLB intranet instance specification used to create a new Intraner SLB instance. Default to `slb.s1.small`"
+  default     = "slb.s1.small"
+}
+variable "slb_internet_spec" {
+  description = "The SLB internet instance specification used to create a new Intraner SLB instance. Default to `slb.s1.small`"
+  default     = "slb.s1.small"
+}
 
 // OSS variables
 variable "bucket_name" {
-  description = "The OSS bucket name. Default to `resource_group_name`"
+  description = "The OSS bucket name. Default to `this_module_name`"
   default     = ""
 }
 

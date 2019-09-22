@@ -1,3 +1,6 @@
+provider "alicloud" {
+  configuration_source = "terraform-alicloud-modules/classic-load-balance"
+}
 // Images data source for image_id
 data "alicloud_images" "default" {
   most_recent = true
@@ -5,23 +8,36 @@ data "alicloud_images" "default" {
   name_regex  = var.image_name_regex
 }
 
-// Instance_types data source for instance_type
-data "alicloud_instance_types" "default" {
-  cpu_core_count = var.cpu_core_count
-  memory_size    = var.memory_size
-}
-
 // Zones data source for availability_zone
 data "alicloud_zones" "default" {
-  available_instance_type     = data.alicloud_instance_types.default.instance_types[0].id
   available_resource_creation = "Rds"
+}
+
+// Instance_types data source for instance_type
+data "alicloud_instance_types" "web" {
+  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_zones.default.ids.0
+  cpu_core_count    = var.web_instance_cpu
+  memory_size       = var.web_instance_memory
+}
+
+data "alicloud_instance_types" "app" {
+  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_zones.default.ids.0
+  cpu_core_count    = var.app_instance_cpu
+  memory_size       = var.app_instance_memory
+}
+
+// Instance classes data source for rds
+data "alicloud_db_instance_classes" "default" {
+  engine         = "MySQL"
+  engine_version = "5.6"
+  zone_id        = length(var.availability_zones) > 1 ? var.availability_zones[0] : data.alicloud_zones.default.ids.0
 }
 
 // If there is not specifying vpc_id, the module will launch a new vpc
 resource "alicloud_vpc" "vpc" {
   count      = var.vpc_id == "" ? 1 : 0
   cidr_block = var.vpc_cidr
-  name       = var.vpc_name == "" ? var.resource_group_name : var.vpc_name
+  name       = var.vpc_name == "" ? var.this_module_name : var.vpc_name
 }
 
 // According to the vswitch cidr blocks to launch several vswitches
@@ -29,10 +45,10 @@ resource "alicloud_vswitch" "vswitches" {
   count             = length(var.vswitch_ids) > 0 ? 0 : length(var.vswitch_cidrs)
   vpc_id            = var.vpc_id == "" ? join("", alicloud_vpc.vpc.*.id) : var.vpc_id
   cidr_block        = var.vswitch_cidrs[count.index]
-  availability_zone = data.alicloud_zones.default.zones[count.index]["id"]
+  availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[count.index] : data.alicloud_zones.default.ids[count.index]
   name = var.vswitch_name_prefix == "" ? format(
     "%s-%s",
-    var.resource_group_name,
+    var.this_module_name,
     format(var.number_format, count.index + 1),
     ) : format(
     "%s-%s",
@@ -44,7 +60,7 @@ resource "alicloud_vswitch" "vswitches" {
 // Security Group Resource for Module
 resource "alicloud_security_group" "default" {
   vpc_id = var.vpc_id == "" ? join("", alicloud_vpc.vpc.*.id) : var.vpc_id
-  name   = var.group_name == "" ? var.resource_group_name : var.group_name
+  name   = var.group_name == "" ? var.this_module_name : var.group_name
 }
 
 // Security Group Rule Resource for Module
@@ -64,7 +80,7 @@ resource "alicloud_instance" "web" {
   count = var.number_of_web_instances
 
   image_id        = var.image_id == "" ? data.alicloud_images.default.images[0].id : var.image_id
-  instance_type   = var.instance_type == "" ? data.alicloud_instance_types.default.instance_types[0].id : var.instance_type
+  instance_type   = var.web_instance_type == "" ? data.alicloud_instance_types.web.instance_types[0].id : var.web_instance_type
   security_groups = [alicloud_security_group.default.id]
 
   instance_name = var.number_of_web_instances < 2 ? var.web_instance_name : format(
@@ -87,7 +103,7 @@ resource "alicloud_instance" "web" {
 
   password = var.ecs_password
 
-  vswitch_id = length(var.vswitch_ids) > 0 ? split(",", join(",", var.vswitch_ids))[count.index % length(split(",", join(",", var.vswitch_ids)))] : length(var.vswitch_cidrs) < 1 ? "" : split(",", join(",", alicloud_vswitch.vswitches.*.id))[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))]
+  vswitch_id = length(var.vswitch_ids) > 0 ? var.vswitch_ids[count.index % length(var.vswitch_ids)] : alicloud_vswitch.vswitches[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))].id
 
   period      = var.period
   period_unit = var.period_unit
@@ -99,7 +115,7 @@ resource "alicloud_instance" "app" {
   count = var.number_of_app_instances
 
   image_id        = var.image_id == "" ? data.alicloud_images.default.images[0].id : var.image_id
-  instance_type   = var.instance_type == "" ? data.alicloud_instance_types.default.instance_types[0].id : var.instance_type
+  instance_type   = var.web_instance_type == "" ? data.alicloud_instance_types.app.instance_types[0].id : var.web_instance_type
   security_groups = [alicloud_security_group.default.id]
 
   instance_name = var.number_of_app_instances < 2 ? var.app_instance_name : format(
@@ -122,7 +138,7 @@ resource "alicloud_instance" "app" {
 
   password = var.ecs_password
 
-  vswitch_id = length(var.vswitch_ids) > 0 ? split(",", join(",", var.vswitch_ids))[count.index % length(split(",", join(",", var.vswitch_ids)))] : length(var.vswitch_cidrs) < 1 ? "" : split(",", join(",", alicloud_vswitch.vswitches.*.id))[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))]
+  vswitch_id = length(var.vswitch_ids) > 0 ? var.vswitch_ids[count.index % length(var.vswitch_ids)] : alicloud_vswitch.vswitches[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))].id
 
   period      = var.period
   period_unit = var.period_unit
@@ -130,8 +146,10 @@ resource "alicloud_instance" "app" {
 
 // SLB Instance Resource for intranet
 resource "alicloud_slb" "intranet" {
-  address_type = "intranet"
-  name         = var.slb_intranet_name == "" ? var.resource_group_name : var.slb_intranet_name
+  address_type  = "intranet"
+  name          = var.slb_intranet_name == "" ? var.this_module_name : var.slb_intranet_name
+  specification = var.slb_intranet_spec
+  vswitch_id    = length(var.vswitch_ids) > 0 ? var.vswitch_ids[0] : alicloud_vswitch.vswitches[0].id
 }
 
 resource "alicloud_slb_attachment" "intranet" {
@@ -141,9 +159,10 @@ resource "alicloud_slb_attachment" "intranet" {
 
 // SLB Instance Resource for internet
 resource "alicloud_slb" "internet" {
-  address_type = "internet"
-  bandwidth    = var.slb_max_bandwidth
-  name         = var.slb_internet_name == "" ? var.resource_group_name : var.slb_internet_name
+  address_type  = "internet"
+  bandwidth     = var.slb_max_bandwidth
+  name          = var.slb_internet_name == "" ? var.this_module_name : var.slb_internet_name
+  specification = var.slb_internet_spec
 }
 resource "alicloud_slb_listener" "http" {
   load_balancer_id    = alicloud_slb.internet.id
@@ -171,9 +190,9 @@ resource "alicloud_db_instance" "default" {
   )
   engine           = var.engine
   engine_version   = var.engine_version
-  instance_type    = var.db_instance_type
-  instance_storage = var.storage
-  vswitch_id       = length(var.vswitch_ids) > 0 ? split(",", join(",", var.vswitch_ids))[count.index % length(split(",", join(",", var.vswitch_ids)))] : length(var.vswitch_cidrs) < 1 ? "" : split(",", join(",", alicloud_vswitch.vswitches.*.id))[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))]
+  instance_type    = var.db_instance_class != "" ? var.db_instance_class : data.alicloud_db_instance_classes.default.instance_classes[0].instance_class
+  instance_storage = var.db_instance_storage > 0 ? var.db_instance_storage : data.alicloud_db_instance_classes.default.instance_classes[0].storage_range["min"]
+  vswitch_id       = length(var.vswitch_ids) > 0 ? var.vswitch_ids[count.index % length(var.vswitch_ids)] : alicloud_vswitch.vswitches[count.index % length(split(",", join(",", alicloud_vswitch.vswitches.*.id)))].id
   security_ips     = alicloud_instance.app.*.private_ip
 }
 
@@ -192,7 +211,7 @@ resource "alicloud_db_database" "default" {
 
 // OSS Resource
 resource "alicloud_oss_bucket" "default" {
-  bucket = var.bucket_name == "" ? var.resource_group_name : var.bucket_name
+  bucket = var.bucket_name == "" ? var.this_module_name : var.bucket_name
   acl    = var.bucket_acl
 }
 
