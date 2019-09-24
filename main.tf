@@ -16,7 +16,6 @@ data "alicloud_db_instance_classes" "default" {
   engine            = "MySQL"
   engine_version    = "5.6"
   db_instance_class = var.db_instance_class
-  output_file       = "classes.json"
 }
 
 // Instance_types data source for instance_type
