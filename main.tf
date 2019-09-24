@@ -16,6 +16,7 @@ data "alicloud_db_instance_classes" "default" {
   engine            = "MySQL"
   engine_version    = "5.6"
   db_instance_class = var.db_instance_class
+  output_file       = "classes.json"
 }
 
 // Instance_types data source for instance_type
@@ -210,8 +211,14 @@ resource "alicloud_db_database" "default" {
 }
 
 // OSS Resource
+resource "random_id" "default" {
+  keepers = {
+    oss_bucket = var.this_module_name
+  }
+  byte_length = 8
+}
 resource "alicloud_oss_bucket" "default" {
-  bucket = var.bucket_name == "" ? var.this_module_name : var.bucket_name
+  bucket = var.bucket_name == "" ? join("-", [var.this_module_name, random_id.default.hex]) : var.bucket_name
   acl    = var.bucket_acl
 }
 

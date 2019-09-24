@@ -27,22 +27,22 @@ variable "image_name_regex" {
 # Instance typs variables
 variable "web_instance_cpu" {
   description = "CPU core count is used to fetch instance types for launching web instances."
-  default     = 1
+  default     = 2
 }
 
 variable "web_instance_memory" {
   description = "Memory size used to fetch instance types for launching web instances."
-  default     = 2
+  default     = 4
 }
 
 variable "app_instance_cpu" {
   description = "CPU core count is used to fetch instance types for launching app instances."
-  default     = 1
+  default     = 2
 }
 
 variable "app_instance_memory" {
   description = "Memory size used to fetch instance types for launching app instances."
-  default     = 2
+  default     = 4
 }
 
 # VPC variables
@@ -253,7 +253,7 @@ variable "slb_internet_spec" {
 
 // OSS variables
 variable "bucket_name" {
-  description = "The OSS bucket name. Default to `this_module_name`"
+  description = "The OSS bucket name. If not set, this module will generate a random name with prefix `this_module_name`"
   default     = ""
 }
 
