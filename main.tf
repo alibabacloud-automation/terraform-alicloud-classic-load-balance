@@ -1,4 +1,5 @@
 provider "alicloud" {
+  version              = ">=1.56.0"
   region               = var.region != "" ? var.region : null
   configuration_source = "terraform-alicloud-modules/classic-load-balance"
 }
@@ -104,6 +105,7 @@ resource "alicloud_instance" "web" {
 
   period      = var.period
   period_unit = var.period_unit
+  tags        = var.instance_tags
   user_data   = file("${path.module}/welcome.sh")
 }
 
@@ -139,6 +141,7 @@ resource "alicloud_instance" "app" {
 
   period      = var.period
   period_unit = var.period_unit
+  tags        = var.instance_tags
 }
 
 // SLB Instance Resource for intranet
