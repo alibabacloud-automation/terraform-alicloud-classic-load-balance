@@ -4,7 +4,7 @@ terraform-alicloud-classic-load-balance
 
 A terraform module to provide classic load balance architecture in alibaba cloud.
 
-![image](https://github.com/aliyun/terraform-alicloud-classic-load-balance/blob/master/architecture.png)
+![image](https://raw.githubusercontent.com/terraform-alicloud-modules/terraform-alicloud-classic-load-balance/master/architecture.png)
 
 These types of the module resource are supported:
 
@@ -83,7 +83,7 @@ Checking
     
 Open Web browser and input the `web_url`(<public_ip/welcome.html>), you can get the follow result:
 
-![image](https://github.com/aliyun/terraform-alicloud-classic-load-balance/blob/master/welcome.png)
+![image](https://raw.githubusercontent.com/terraform-alicloud-modules/terraform-alicloud-classic-load-balance/master/welcome.png)
 
 Terraform version
 -----------------
