@@ -91,7 +91,7 @@ Terraform version 0.12.0+ is required for this module to work.
 
 Authors
 -------
-Created and maintained by He Guimin(@xiaozhu36, heguimin36@163.com)
+Created and maintained by Alibaba Cloud Terraform Team(terraform@alibabacloud.com)
 
 License
 -------
