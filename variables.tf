@@ -21,7 +21,7 @@ variable "this_module_name" {
 # Image variables
 variable "image_name_regex" {
   description = "The ECS image's name regex used to fetch specified image."
-  default     = "^ubuntu_16.*_64"
+  default     = "^centos_6"
 }
 
 # Instance typs variables
