@@ -1,6 +1,6 @@
 //# common variables
 variable "region" {
-  description = "The region used to launch this module resources."
+  description = "(Deprecated from version 2.7.0) The region used to launch this module resources."
   default     = ""
 }
 variable "availability_zones" {
