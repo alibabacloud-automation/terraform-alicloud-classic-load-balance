@@ -1,15 +1,15 @@
 // Images data source for image_id
 data "alicloud_images" "default" {
-  most_recent = true
-  owners      = "system"
+  most_recent = var.most_recent
+  owners      = var.owners
   name_regex  = var.image_name_regex
 }
 
 // Instance classes data source for rds and availablity zones
 // Because the rds instance class not always has enough stock, this module does not use datasource alicloud_zones directly
 data "alicloud_db_instance_classes" "default" {
-  engine            = "MySQL"
-  engine_version    = "5.6"
+  engine            = var.engine
+  engine_version    = var.engine_version
   db_instance_class = var.db_instance_class
 }
 
@@ -30,7 +30,7 @@ data "alicloud_instance_types" "app" {
 resource "alicloud_vpc" "vpc" {
   count      = var.vpc_id == "" ? 1 : 0
   cidr_block = var.vpc_cidr
-  name       = var.vpc_name == "" ? var.this_module_name : var.vpc_name
+  vpc_name   = var.vpc_name == "" ? var.this_module_name : var.vpc_name
 }
 
 // According to the vswitch cidr blocks to launch several vswitches
@@ -39,7 +39,7 @@ resource "alicloud_vswitch" "vswitches" {
   vpc_id            = var.vpc_id == "" ? join("", alicloud_vpc.vpc.*.id) : var.vpc_id
   cidr_block        = var.vswitch_cidrs[count.index]
   availability_zone = length(var.availability_zones) > 1 ? var.availability_zones[count.index] : data.alicloud_db_instance_classes.default.instance_classes[0].zone_ids[count.index % length(data.alicloud_db_instance_classes.default.instance_classes[0].zone_ids)]["id"]
-  name = var.vswitch_name_prefix == "" ? format(
+  vswitch_name = var.vswitch_name_prefix == "" ? format(
     "%s-%s",
     var.this_module_name,
     format(var.number_format, count.index + 1),
@@ -58,14 +58,14 @@ resource "alicloud_security_group" "default" {
 
 // Security Group Rule Resource for Module
 resource "alicloud_security_group_rule" "rules" {
-  type              = "ingress"
-  ip_protocol       = "all"
-  nic_type          = "intranet"
-  policy            = "accept"
-  port_range        = "-1/-1"
-  priority          = 1
+  type              = var.sgr_type
+  ip_protocol       = var.sgr_ip_protocol
+  nic_type          = var.sgr_nic_type
+  policy            = var.sgr_policy
+  port_range        = var.sgr_port_range
+  priority          = var.sgr_priority
   security_group_id = alicloud_security_group.default.id
-  cidr_ip           = "0.0.0.0/0"
+  cidr_ip           = var.sgr_cidr_ip
 }
 
 // ECS Instance Resource for Web Tier
@@ -139,12 +139,12 @@ resource "alicloud_instance" "app" {
   tags        = var.instance_tags
 }
 
-// SLB Instance Resource for intranet
+// SLB Instance Resource for intranet intranet
 resource "alicloud_slb" "intranet" {
-  address_type  = "intranet"
-  name          = var.slb_intranet_name == "" ? var.this_module_name : var.slb_intranet_name
-  specification = var.slb_intranet_spec
-  vswitch_id    = length(var.vswitch_ids) > 0 ? var.vswitch_ids[0] : alicloud_vswitch.vswitches[0].id
+  address_type       = var.slb_intranet_address_type
+  load_balancer_name = var.slb_intranet_name == "" ? var.this_module_name : var.slb_intranet_name
+  load_balancer_spec = var.slb_intranet_spec
+  vswitch_id         = length(var.vswitch_ids) > 0 ? var.vswitch_ids[0] : alicloud_vswitch.vswitches[0].id
 }
 
 resource "alicloud_slb_attachment" "intranet" {
@@ -154,21 +154,21 @@ resource "alicloud_slb_attachment" "intranet" {
 
 // SLB Instance Resource for internet
 resource "alicloud_slb" "internet" {
-  address_type  = "internet"
-  bandwidth     = var.slb_max_bandwidth
-  name          = var.slb_internet_name == "" ? var.this_module_name : var.slb_internet_name
-  specification = var.slb_internet_spec
+  address_type       = var.slb_internet_address_type
+  bandwidth          = var.slb_max_bandwidth
+  load_balancer_name = var.slb_internet_name == "" ? var.this_module_name : var.slb_internet_name
+  load_balancer_spec = var.slb_internet_spec
 }
 resource "alicloud_slb_listener" "http" {
   load_balancer_id    = alicloud_slb.internet.id
-  backend_port        = 8000
-  frontend_port       = 80
-  protocol            = "http"
-  sticky_session      = "on"
-  sticky_session_type = "insert"
-  cookie_timeout      = 86400
-  health_check        = "off"
-  bandwidth           = 10
+  backend_port        = var.backend_port
+  frontend_port       = var.frontend_port
+  protocol            = var.protocol
+  sticky_session      = var.sticky_session
+  sticky_session_type = var.sticky_session_type
+  cookie_timeout      = var.cookie_timeout
+  health_check        = var.health_check
+  bandwidth           = var.bandwidth
 }
 resource "alicloud_slb_attachment" "internet" {
   load_balancer_id = alicloud_slb.internet.id
@@ -192,10 +192,10 @@ resource "alicloud_db_instance" "default" {
 }
 
 resource "alicloud_db_account" "default" {
-  count       = var.number_of_rds_instances
-  instance_id = alicloud_db_instance.default.*.id[count.index]
-  name        = "${var.rds_account_name_prefix}${count.index}"
-  password    = var.rds_account_password
+  count            = var.number_of_rds_instances
+  db_instance_id   = alicloud_db_instance.default.*.id[count.index]
+  account_name     = "${var.rds_account_name_prefix}${count.index}"
+  account_password = var.rds_account_password
 }
 
 resource "alicloud_db_database" "default" {
@@ -215,4 +215,3 @@ resource "alicloud_oss_bucket" "default" {
   bucket = var.bucket_name == "" ? join("-", [var.this_module_name, random_id.default.hex]) : var.bucket_name
   acl    = var.bucket_acl
 }
-
