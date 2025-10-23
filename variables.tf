@@ -106,6 +106,12 @@ variable "web_instance_type" {
   type        = string
 }
 
+variable "app_instance_type" {
+  description = "The instance type used to launch one or more app instances. Default from instance typs datasource."
+  default     = ""
+  type        = string
+}
+
 variable "system_category" {
   description = "The system disk category used to launch one or more ecs instances."
   default     = "cloud_efficiency"

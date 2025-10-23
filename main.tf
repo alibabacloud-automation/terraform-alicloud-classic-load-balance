@@ -109,7 +109,7 @@ resource "alicloud_instance" "app" {
   count = var.number_of_app_instances
 
   image_id        = var.image_id == "" ? data.alicloud_images.default.images[0].id : var.image_id
-  instance_type   = var.web_instance_type == "" ? data.alicloud_instance_types.app.instance_types[0].id : var.web_instance_type
+  instance_type   = var.app_instance_type == "" ? data.alicloud_instance_types.app.instance_types[0].id : var.app_instance_type
   security_groups = [alicloud_security_group.default.id]
 
   instance_name = var.number_of_app_instances < 2 ? var.app_instance_name : format(
