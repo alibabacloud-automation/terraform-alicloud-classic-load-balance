@@ -10,27 +10,33 @@ A terraform module to provide classic load balance architecture in alibaba cloud
 
 ## Usage
 
+<div style="display: block;margin-bottom: 40px;"><div class="oics-button" style="float: right;position: absolute;margin-bottom: 10px;">
+  <a href="https://api.aliyun.com/terraform?source=Module&activeTab=document&sourcePath=aliyun%3A%3Aclassic-load-balance&spm=docs.m.aliyun.classic-load-balance&intl_lang=EN_US" target="_blank">
+    <img alt="Open in AliCloud" src="https://img.alicdn.com/imgextra/i1/O1CN01hjjqXv1uYUlY56FyX_!!6000000006049-55-tps-254-36.svg" style="max-height: 44px; max-width: 100%;">
+  </a>
+</div></div>
+
 You can use this in your terraform template with the following steps.
 
 1. Adding a module resource to your template, e.g. main.tf
 
 
-    ```
-    module "classic-load-balance" {
-        source = "aliyun/classic-load-balance/alicloud"
+```hcl
+module "classic-load-balance" {
+   source = "aliyun/classic-load-balance/alicloud"
 
-        vpc_name = "my-new-vpc"
-        vswitch_cidrs = ["10.1.2.0/24", "10.1.3.0/24"]
+   vpc_name = "my-new-vpc"
+   vswitch_cidrs = ["10.1.2.0/24", "10.1.3.0/24"]
 
-        system_category = "cloud_ssd"
-        system_size = "100"
+   system_category = "cloud_ssd"
+   system_size = "100"
 
-        slb_max_bandwidth = "50"
-    }
-    output "web_url" {
-      value = module.classic-load-balance.web_url
-    }
-    ```
+   slb_max_bandwidth = "50"
+}
+output "web_url" {
+value = module.classic-load-balance.web_url
+}
+```
 
 2. Setting `access_key` and `secret_key` values through environment variables:
 
