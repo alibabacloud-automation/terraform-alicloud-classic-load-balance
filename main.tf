@@ -169,7 +169,7 @@ resource "alicloud_slb_listener" "http" {
   cookie_timeout      = 86400
   health_check        = "off"
   bandwidth           = 10
-  acl_status          = "on"
+  acl_status          = "off"
 }
 resource "alicloud_slb_attachment" "internet" {
   load_balancer_id = alicloud_slb_load_balancer.internet.id
