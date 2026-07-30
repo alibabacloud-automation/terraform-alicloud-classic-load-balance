@@ -35,7 +35,7 @@ module "classic-load-balance" {
   system_size       = "100"
 
   slb_max_bandwidth = "50"
-  acl_status        = "off"
+  acl_status        = "on"
 
   engine              = "MySQL"
   engine_version      = "5.6"

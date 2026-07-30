@@ -264,7 +264,7 @@ variable "rds_database_name_prefix" {
 # SLB variables
 variable "acl_status" {
   description = "The ACL status of the HTTP listener."
-  default     = "on"
+  default     = null
   type        = string
 }
 
@@ -308,4 +308,3 @@ variable "bucket_acl" {
   default     = "private"
   type        = string
 }
-
