@@ -186,6 +186,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_acl_status"></a> [acl\_status](#input_acl_status) | The ACL status of the HTTP listener. | `string` | `"on"` | no |
 | <a name="input_app_host_name"></a> [app\_host\_name](#input\_app\_host\_name) | The instance host name used to configure app instances. | `string` | `"tf-app-tier"` | no |
 | <a name="input_app_instance_cpu"></a> [app\_instance\_cpu](#input\_app\_instance\_cpu) | CPU core count is used to fetch instance types for launching app instances. | `number` | `2` | no |
 | <a name="input_app_instance_memory"></a> [app\_instance\_memory](#input\_app\_instance\_memory) | Memory size used to fetch instance types for launching app instances. | `number` | `4` | no |
