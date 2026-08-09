@@ -169,6 +169,7 @@ resource "alicloud_slb_listener" "http" {
   cookie_timeout      = 86400
   health_check        = "off"
   bandwidth           = 10
+  acl_status          = var.acl_status
 }
 resource "alicloud_slb_attachment" "internet" {
   load_balancer_id = alicloud_slb_load_balancer.internet.id
@@ -219,4 +220,3 @@ resource "alicloud_oss_bucket_acl" "default" {
   bucket = alicloud_oss_bucket.default.bucket
   acl    = var.bucket_acl
 }
-
