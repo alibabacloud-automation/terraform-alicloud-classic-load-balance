@@ -262,6 +262,12 @@ variable "rds_database_name_prefix" {
 }
 
 # SLB variables
+variable "acl_status" {
+  description = "The ACL status of the HTTP listener."
+  default     = null
+  type        = string
+}
+
 variable "slb_intranet_name" {
   description = "The SLB intranet instance name used to create a new Intraner SLB instance. Default to `this_module_name`"
   default     = ""
@@ -302,4 +308,3 @@ variable "bucket_acl" {
   default     = "private"
   type        = string
 }
-
